@@ -1,0 +1,66 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hundir la flota</title>
+  <link rel="stylesheet" href="{% static 'HDLF/tablero.css' %}">
+  <script src="{% static 'HDLF/tablero.js' %}" defer></script>
+</head>
+<body>
+  <h1>Hundir la flota</h1>
+
+  {% if messages %}
+    <ul class="mensajes">
+      {% for mensaje in messages %}
+        <li class="{{ mensaje.tags }}">{{ mensaje }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <table class="tablero">
+    <thead>
+      <tr>
+        <th></th>
+        {% for c in columnas %}<th>{{ c }}</th>{% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for fila in tablero %}
+        <tr>
+          <th>{{ forloop.counter0 }}</th>
+          {% for casilla in fila %}
+            <td class="{% if casilla == 'x' %}tocado{% elif casilla == 'o' %}agua{% endif %}">{{ casilla }}</td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if jugando %}
+    <p>Disparos restantes: <strong>{{ disparos_restantes }}</strong></p>
+    <button type="button" id="btn-disparar">Disparar</button>
+
+    <dialog id="modal-disparo">
+      <form method="post" action="{% url 'disparar' %}">
+        {% csrf_token %}
+        <h2>Disparar</h2>
+        <label>Fila <input type="number" name="fila" min="0" max="9" required></label>
+        <label>Columna <input type="number" name="columna" min="0" max="9" required></label>
+        <div class="acciones">
+          <button type="button" id="btn-cancelar">Cancelar</button>
+          <button type="submit">¡Fuego!</button>
+        </div>
+      </form>
+    </dialog>
+  {% else %}
+    <form method="post" action="{% url 'empezar' %}">
+      {% csrf_token %}
+      <button type="submit">Empezar juego</button>
+    </form>
+  {% endif %}
+
+  {{ tablero|json_script:"datos-tablero" }}
+</body>
+</html>
