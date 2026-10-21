@@ -167,33 +167,3 @@ def debe_hacer_trampa(aciertos_jugador, aciertos_maquina):
 
 
 
-
-def crear_tablero():
-    tablero = []
-    barco_h = 0, 1, 2, 3
-    barco_v = 3, 4, 5
-    for i in range(0, 10):
-        fila = [" "] * 10
-        tablero.append(fila)
-    for x in barco_h:
-        tablero[1][x] = "B"
-    for y in barco_v:
-        tablero[y][3] = "B"
-    return tablero
-
-
-def barcos_restantes(tablero):
-    total = 0
-    for fila in tablero:
-        total += fila.count("B")
-    return total
-
-
-def disparar(tablero, i, j):
-    if tablero[i][j] == "x" or tablero[i][j] == "o":
-        return "repetido"
-    if tablero[i][j] == "B":
-        tablero[i][j] = "x"
-        return "tocado"
-    tablero[i][j] = "o"
-    return "agua"

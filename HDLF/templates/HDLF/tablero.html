@@ -6,61 +6,129 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Hundir la flota</title>
   <link rel="stylesheet" href="{% static 'HDLF/tablero.css' %}">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js" defer></script>
   <script src="{% static 'HDLF/tablero.js' %}" defer></script>
+  <script src="{% static 'HDLF/animaciones.js' %}" defer></script>
 </head>
 <body>
-  <h1>Hundir la flota</h1>
+<div class="pagina">
+  <aside id="flota" data-abrir-modal="modal-flota" title="Pulsa para ampliar">
+    <h2>Flotas</h2>
+    {% include "HDLF/_flota.html" with titulo="Tus barcos" barcos=flota_jugador %}
+    {% include "HDLF/_flota.html" with titulo="Barcos del enemigo" barcos=flota_maquina %}
+    </aside>
+  <main class="principal">
+    <h1>Hundir la flota</h1>
 
-  {% if messages %}
-    <ul class="mensajes">
-      {% for mensaje in messages %}
-        <li class="{{ mensaje.tags }}">{{ mensaje }}</li>
-      {% endfor %}
-    </ul>
-  {% endif %}
+    {% if messages %}
+      <ul class="mensajes">
+        {% for mensaje in messages %}
+          <li class="{{ mensaje.tags }}">{{ mensaje }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
 
-  <table class="tablero">
-    <thead>
-      <tr>
-        <th></th>
-        {% for c in columnas %}<th>{{ c }}</th>{% endfor %}
-      </tr>
-    </thead>
-    <tbody>
-      {% for fila in tablero %}
-        <tr>
-          <th>{{ forloop.counter0 }}</th>
-          {% for casilla in fila %}
-            <td class="{% if casilla == 'x' %}tocado{% elif casilla == 'o' %}agua{% endif %}">{{ casilla }}</td>
-          {% endfor %}
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  
+    <h2>Tablero de la máquina <small>(te quedan por hundir: {{ barcos_maquina }})</small></h2>
+    {% include "HDLF/_tablero.html" with matriz=tablero id_tablero="maquina" %}
 
-  {% if jugando %}
-    <p>Disparos restantes: <strong>{{ disparos_restantes }}</strong></p>
-    <button type="button" id="btn-disparar">Disparar</button>
+    <h2>Tu tablero <small>(barcos que te quedan: {{ barcos_jugador }})</small></h2>
+    {% include "HDLF/_tablero.html" with matriz=tablero_propio id_tablero="propio" %}
 
-    <dialog id="modal-disparo">
-      <form method="post" action="{% url 'disparar' %}">
+    {% if jugando %}
+      <button type="button" id="btn-disparar" data-abrir-modal="modal-disparo">Disparar</button>
+      <button type="button" id="btn-rendirse" data-abrir-modal="modal-rendirse">Rendirse</button>
+
+      <dialog id="modal-disparo">
+        <form method="post" action="{% url 'disparar' %}">
+          {% csrf_token %}
+          <h2>Disparar</h2>
+          <label>Fila <input type="number" name="fila" min="0" max="9" required></label>
+          <label>Columna <input type="number" name="columna" min="0" max="9" required></label>
+          <div class="acciones">
+            <button type="button" data-cerrar-modal>Cancelar</button>
+            <button type="submit">¡Fuego!</button>
+          </div>
+        </form>
+      </dialog>
+
+      <dialog id="modal-rendirse">
+        <form method="post" action="{% url 'rendirse' %}">
+          {% csrf_token %}
+          <h2>Rendirse</h2>
+          <p>¿Seguro que quieres rendirte?</p>
+          <div class="acciones">
+            <button type="button" data-cerrar-modal>Cancelar</button>
+            <button type="submit">Aceptar</button>
+          </div>
+        </form>
+      </dialog>
+    {% else %}
+      <button type="button" id="btn-empezar" data-abrir-modal="modal-empezar">Empezar juego</button>
+
+      <dialog id="modal-empezar">
+        <form method="post" action="{% url 'empezar' %}">
+          {% csrf_token %}
+          <h2>Nueva partida</h2>
+          <label>Dificultad
+            <select name="dificultad" id="select-dificultad">
+              {% for valor, nombre in dificultades %}<option value="{{ valor }}">{{ nombre }}</option>{% endfor %}
+            </select>
+          </label>
+          <p id="info-dificultad" class="info" hidden>
+            En este nivel la máquina podrá hacer trampas según tu rendimiento.
+          </p>
+          <div class="acciones">
+            <button type="button" data-cerrar-modal>Cancelar</button>
+            <button type="submit">Empezar</button>
+          </div>
+        </form>
+      </dialog>
+    {% endif %}
+
+    {% if partida_id %}  <!--Bloque para controlar que si existe una partida en curso, el boton limpiar campo de batalla, reinicia todo el tablero y la logica completa-->
+    <button type="button" id="btn-limpiar" data-abrir-modal="modal-limpiar">Limpiar campo de batalla</button>
+
+    <dialog id="modal-limpiar">
+      <form method="post" action="{% url 'limpiar' %}">
         {% csrf_token %}
-        <h2>Disparar</h2>
-        <label>Fila <input type="number" name="fila" min="0" max="9" required></label>
-        <label>Columna <input type="number" name="columna" min="0" max="9" required></label>
+        <h2>Limpiar campo de batalla</h2>
+        <p>Se borrarán los tableros y el historial.{% if jugando %} La partida en curso contará como perdida.{% endif %}</p>
         <div class="acciones">
-          <button type="button" id="btn-cancelar">Cancelar</button>
-          <button type="submit">¡Fuego!</button>
+          <button type="button" data-cerrar-modal>Cancelar</button>
+          <button type="submit">Limpiar</button>
         </div>
       </form>
     </dialog>
-  {% else %}
-    <form method="post" action="{% url 'empezar' %}">
-      {% csrf_token %}
-      <button type="submit">Empezar juego</button>
-    </form>
   {% endif %}
 
-  {{ tablero|json_script:"datos-tablero" }}
-</body>
+    {{ tablero|json_script:"datos-tablero" }}
+    {{ tablero_propio|json_script:"datos-tablero-propio" }}
+    {{ ultima_jugada|json_script:"datos-ultima-jugada" }}
+    {{ ultima_jugada|json_script:"datos-ultima-jugada" }}
+    </main>
+    <aside id="historial" data-partida="{{ partida_id }}" data-abrir-modal="modal-historial" title="Pulsa para ampliar">
+      <h2>Historial</h2>
+      <ul id="historial-lista" class="lista-historial"></ul>
+    </aside>
+  </div>
+    <dialog id="modal-flota">
+      <h2>Flotas</h2>
+      <div class="flota-columnas">
+        {% include "HDLF/_flota.html" with titulo="Tus barcos" barcos=flota_jugador %}
+        {% include "HDLF/_flota.html" with titulo="Barcos del enemigo" barcos=flota_maquina %}
+      </div>
+      <div class="acciones">
+        <button type="button" data-cerrar-modal>Cerrar</button>
+      </div>
+    </dialog>
+
+    <dialog id="modal-historial">
+      <h2>Historial de la partida</h2>
+      <ul id="historial-lista-ampliada" class="lista-historial"></ul>
+      <div class="acciones">
+        <button type="button" data-cerrar-modal>Cerrar</button>
+      </div>
+    </dialog>
+  </body>
 </html>

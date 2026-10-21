@@ -1,0 +1,21 @@
+{% load static %}
+<section class="flota-grupo">
+  <h3>{{ titulo }}</h3>
+  <ul class="flota-lista">
+    {% for barco in barcos %}
+      <li class="flota-barco{% if barco.hundido %} hundido{% endif %}">
+        <span class="barco-figura">
+          {# Si existe la imagen se muestra; si no, se queda el dibujo provisional (ver tablero.js) #}
+          <img class="barco-img" src="{% static 'HDLF/img/' %}barco_{{ barco.eslora }}.png" alt="" hidden>
+          <span class="barco-dibujo" style="--eslora: {{ barco.eslora }}"></span>
+        </span>
+        <span class="barco-nombre">{{ barco.nombre }}</span>
+        <span class="barco-estado">
+          {% if barco.hundido %}Hundido
+          {% elif barco.tocadas %}Tocado {{ barco.tocadas }}/{{ barco.eslora }}
+          {% else %}A flote{% endif %}
+        </span>
+      </li>
+    {% endfor %}
+  </ul>
+</section>

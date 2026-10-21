@@ -1,0 +1,18 @@
+<table class="tablero" data-tablero="{{ id_tablero }}">
+  <thead>
+    <tr>
+      <th></th>
+      {% for c in columnas %}<th>{{ c }}</th>{% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for fila in matriz %}{% with num_fila=forloop.counter0 %}
+      <tr>
+        <th>{{ forloop.counter0 }}</th>
+        {% for casilla in fila %}
+          <td data-fila="{{ num_fila }}" data-columna="{{ forloop.counter0 }}" class="{% if casilla == 'x' %}tocado{% elif casilla == 'o' %}agua{% elif casilla == 'B' %}barco{% endif %}">{{ casilla }}</td>
+        {% endfor %}
+      </tr>
+    {% endwith %}{% endfor %}
+  </tbody>
+</table>

@@ -1,4 +1,4 @@
-body { font-family: system-ui, sans-serif; max-width: 480px; margin: 2rem auto; padding: 0 1rem; }
+body { font-family: system-ui, sans-serif; max-width: 850px; margin: 2rem auto; padding: 0 1rem; }
 
 .tablero { border-collapse: collapse; margin: 1rem 0; }
 .tablero th { width: 2rem; height: 2rem; color: #666; font-weight: normal; }
@@ -19,3 +19,249 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
 dialog label { display: block; margin: .6rem 0; }
 dialog input { width: 4rem; margin-left: .5rem; padding: .3rem; font-size: 1rem; }
 dialog .acciones { display: flex; gap: .5rem; justify-content: flex-end; margin-top: 1rem; }
+
+.tablero td.barco { background: #6b7a8f; color: #fff; }
+h2 small { font-weight: normal; color: #666; font-size: .75em; }
+
+dialog select { margin-left: .5rem; padding: .3rem; font-size: 1rem; }
+dialog p.info { background: #fdf0c9; border-radius: 6px; padding: .5rem .75rem; max-width: 18rem; }
+
+.pagina { display: flex; gap: 2rem; align-items: flex-start; }
+.principal { flex: 0 0 440px; max-width: 100%; }
+
+#historial {
+  flex: 1;
+  min-width: 220px;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: .25rem 1rem 1rem;
+  background: #fafafa;
+  position: sticky;   /* se queda pegado arriba al hacer scroll */
+  top: 1rem;          /* a 1rem del borde superior de la ventana */
+}
+#historial-lista { max-height: calc(100vh - 6rem); }
+
+#historial:hover { background: #f1f6fb; }
+#historial h2 { font-size: 1.1rem; }
+
+.lista-historial { list-style: none; margin: 0; padding: 0; overflow-y: auto; }
+
+.lista-historial li { padding: .3rem .5rem; margin-bottom: .25rem; border-radius: 6px; background: #eee; font-size: .9rem; }
+.lista-historial li.success { background: #d9f2dd; }
+.lista-historial li.error   { background: #f9d6d6; }
+.lista-historial li.warning { background: #fdf0c9; }
+
+/* Modal ampliado: fondo translúcido */
+#modal-historial {
+  width: min(90vw, 700px);
+  background: rgba(255, 255, 255, .88);
+  backdrop-filter: blur(6px);
+}
+#modal-historial::backdrop { background: rgba(0, 0, 0, .35); }
+#historial-lista-ampliada { max-height: 60vh; }
+#historial-lista-ampliada li { font-size: 1.05rem; }
+
+@media (max-width: 760px) {
+  .pagina { flex-direction: column; }
+  .principal { flex-basis: auto; }
+  #historial { width: 100%; box-sizing: border-box; }
+}
+
+/* ---------- Limpiar con fuego ---------- */
+.barrido-fuego {
+  position: fixed;
+  top: -10vh;
+  left: 0;
+  width: 60vw;
+  height: 120vh;
+  z-index: 1000;
+  pointer-events: none;
+  /* de izquierda a derecha: humo, rojo, naranja y el frente amarillo */
+  background: linear-gradient(to right,
+    transparent 0%,
+    rgba(30, 15, 10, .35) 25%,
+    rgba(180, 30, 0, .7) 62%,
+    rgba(255, 110, 0, .92) 82%,
+    rgba(255, 210, 90, 1) 93%,
+    rgba(255, 250, 210, .9) 97%,
+    transparent 100%);
+  filter: blur(8px);
+  animation: barrer linear forwards;
+}
+/* lenguas de fuego en el frente, parpadeando */
+.barrido-fuego::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: -6vw;
+  width: 12vw;
+  height: 100%;
+  background:
+    radial-gradient(ellipse 50% 9% at 30% 20%, rgba(255, 200, 60, .9), transparent 70%),
+    radial-gradient(ellipse 45% 8% at 60% 45%, rgba(255, 140, 0, .9), transparent 70%),
+    radial-gradient(ellipse 50% 9% at 35% 70%, rgba(255, 220, 100, .9), transparent 70%),
+    radial-gradient(ellipse 40% 7% at 65% 88%, rgba(255, 120, 0, .9), transparent 70%);
+  animation: parpadeo .18s steps(2) infinite alternate;
+}
+@keyframes barrer {
+  from { transform: translateX(-60vw); }
+  to   { transform: translateX(100vw); }
+}
+@keyframes parpadeo {
+  from { transform: translateY(-2%) scaleX(1); opacity: .85; }
+  to   { transform: translateY(2%) scaleX(1.25); opacity: 1; }
+}
+
+/* el elemento se tuesta y se deshace */
+.quemado { animation: quemar .55s ease-in forwards; }
+@keyframes quemar {
+  0%   { filter: none; }
+  35%  { filter: sepia(1) saturate(5) hue-rotate(-25deg) brightness(1.1); }
+  100% { filter: grayscale(1) brightness(.2); opacity: 0; transform: translateY(6px) scale(.97); }
+}
+
+/* partículas de ceniza y brasas */
+.ceniza {
+  position: fixed;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #3a3a3a;
+  z-index: 999;
+  pointer-events: none;
+  animation: volar 1.1s ease-out forwards;
+}
+.ceniza.brasa { background: #ff8c1a; box-shadow: 0 0 6px #ff6a00; }
+@keyframes volar {
+  to { transform: translate(var(--dx), var(--dy)) scale(.3); opacity: 0; }
+}
+
+/* la página limpia aparece con un fundido */
+body.renacer .pagina { animation: renacer .7s ease-out; }
+@keyframes renacer {
+  from { opacity: 0; transform: translateY(10px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .barrido-fuego, .ceniza { display: none; }
+}
+
+/* ---------- Animaciones de disparos (animaciones.js) ---------- */
+/* casilla "rebobinada" mientras espera su animación */
+.tablero td.pendiente { background: #eaf3fb !important; color: transparent !important; box-shadow: none !important; }
+
+.fx { position: absolute; pointer-events: none; z-index: 900; border-radius: 50%; }
+.fx-mira {
+  border: 2px solid #e5484d;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, .8);
+  background:
+    linear-gradient(#e5484d, #e5484d) center / 2px 60% no-repeat,
+    linear-gradient(#e5484d, #e5484d) center / 60% 2px no-repeat;
+}
+.fx-onda     { border: 3px solid #4a9fe0; }
+.fx-gota     { background: #3b8fd9; }
+.fx-destello { background: radial-gradient(circle, #fffbe0 0%, #ffd34d 35%, rgba(255, 120, 0, .6) 60%, transparent 70%); }
+.fx-brasa    { background: #ff8c1a; box-shadow: 0 0 6px #ff5a00; }
+.fx-humo     { background: radial-gradient(circle, rgba(90, 90, 90, .8), rgba(90, 90, 90, 0) 70%); }
+
+/* ---------- Cuadro de flotas (izquierda) ---------- */
+/* que el atributo hidden oculte siempre, aunque otra regla ponga display */
+[hidden] { display: none !important; }
+
+#flota {
+  flex: 0 0 210px;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: .25rem 1rem 1rem;
+  background: #fafafa;
+  position: sticky;
+  top: 1rem;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+#flota:hover { background: #f1f6fb; }
+#flota h2 { font-size: 1.1rem; }
+
+.flota-grupo h3 { font-size: .95rem; margin: .8rem 0 .4rem; }
+.flota-lista { list-style: none; margin: 0; padding: 0; }
+.flota-barco {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: .5rem;
+  align-items: center;
+  padding: .25rem 0;
+  font-size: .8rem;
+}
+.barco-figura { grid-row: span 2; display: flex; align-items: center; --unidad: 14px; min-width: calc(4 * var(--unidad)); }
+.barco-nombre { font-weight: 600; }
+.barco-estado { color: #666; }
+
+/* imagen del barco: alto fijo, ancho según su eslora (PNG horizontal) */
+.barco-img { height: var(--unidad); width: auto; display: block; }
+/* dibujo provisional mientras no haya PNG: una casilla por unidad de eslora */
+.barco-dibujo {
+  display: block;
+  height: var(--unidad);
+  width: calc(var(--eslora) * var(--unidad));
+  border-radius: 3px 40% 40% 3px;
+  background:
+    repeating-linear-gradient(to right, transparent 0 calc(var(--unidad) - 1px), rgba(255,255,255,.5) 0 var(--unidad)),
+    #6b7a8f;
+}
+
+/* barco hundido: gris, tachado y en rojo */
+.flota-barco.hundido .barco-img,
+.flota-barco.hundido .barco-dibujo { filter: grayscale(1); opacity: .4; }
+.flota-barco.hundido .barco-nombre { text-decoration: line-through; color: #999; }
+.flota-barco.hundido .barco-estado { color: #e5484d; font-weight: 600; }
+
+/* modal ampliado: mismo estilo que el del historial, dos columnas */
+#modal-flota {
+  width: min(92vw, 760px);
+  background: rgba(255, 255, 255, .88);
+  backdrop-filter: blur(6px);
+}
+#modal-flota::backdrop { background: rgba(0, 0, 0, .35); }
+.flota-columnas { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+#modal-flota .barco-figura { --unidad: 28px; }
+#modal-flota .flota-barco { font-size: 1rem; padding: .4rem 0; }
+
+@media (max-width: 760px) {
+  #flota { position: static; flex-basis: auto; max-height: none; width: 100%; }
+  .flota-columnas { grid-template-columns: 1fr; }
+}
+
+/* ---------- Distribución en tres columnas ---------- */
+/* flotas pegado a la izquierda | juego centrado | historial pegado a la derecha */
+body { max-width: none; margin: 0; padding: 1rem 1.5rem; }
+.pagina {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr) 300px;
+  gap: 2rem;
+  align-items: start;
+}
+.principal { justify-self: center; width: 100%; max-width: 440px; }
+
+/* pantallas estrechas: una columna, en orden flotas, juego, historial */
+@media (max-width: 1000px) {
+  .pagina { grid-template-columns: minmax(0, 1fr); }
+  .principal { max-width: none; }
+  #flota, #historial { position: static; max-height: none; }
+}
+
+/* ---------- Textura de agua en los tableros ---------- */
+/* el agua va de fondo de todo el cuerpo de la tabla (una sola imagen continua) */
+.tablero tbody { background: url("img/agua.jpg") 0 0 / 256px 256px repeat; }
+.tablero tbody th { background: #fff; }                /* los números de fila, fuera del agua */
+.tablero td {
+  background: transparent;
+  border-color: rgba(255, 255, 255, .35);
+  color: transparent;                                   /* el "~" ya no hace falta: se ve el agua */
+}
+.tablero td.agua   { background: rgba(255, 255, 255, .45); color: #1d4f7a; font-weight: bold; }
+.tablero td.tocado { background: #e5484d; color: #fff; }
+.tablero td.barco  { background: #6b7a8f; color: #fff; }
+.tablero td.pendiente { background: transparent !important; color: transparent !important; }

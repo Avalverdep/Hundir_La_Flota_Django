@@ -4,17 +4,27 @@ from .variables import DIMENSION, BARCOS, AGUA, BARCO, TOCADO, FALLO, ORIENTACIO
 
 
 class Tablero:
-    def __init__(self, id_jugador):
+    def __init__(self, id_jugador, posiciones=None):
+        """Sin posiciones: coloca los barcos al azar. Con posiciones
+        ({nombre: [(fila, columna), ...]}): reconstruye un tablero ya guardado."""
         self.id_jugador = id_jugador
         self.dimension = DIMENSION
         self.barcos = BARCOS
-        # Lo que hay de verdad: barcos, impactos y fallos recibidos
         self.tablero_barcos = self.crear_tablero_vacio()
-        # Lo que ve el rival: solo los disparos recibidos, sin barcos
         self.tablero_disparos = self.crear_tablero_vacio()
-        self.posiciones = {}         
-        self.barco_en_casilla = {}   
-        self.colocar_barcos()
+        self.posiciones = {}
+        self.barco_en_casilla = {}
+        if posiciones is None:
+            self.colocar_barcos()
+        else:
+            self.cargar_barcos(posiciones)
+
+    def cargar_barcos(self, posiciones):
+        for nombre, casillas in posiciones.items():
+            for f, c in casillas:
+                self.tablero_barcos[f][c] = BARCO
+                self.barco_en_casilla[(f, c)] = nombre
+            self.posiciones[nombre] = list(casillas) 
 
     def crear_tablero_vacio(self):
         tablero = []

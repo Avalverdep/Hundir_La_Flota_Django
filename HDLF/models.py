@@ -10,6 +10,13 @@ class Partida(models.Model):
         GANADA = "ganada", "Ganada"
         PERDIDA = "perdida", "Perdida"
 
+    class Dificultad(models.TextChoices):
+        NORMAL = "normal", "Normal"
+        ADAPTATIVA = "adaptativa", "Adaptativa"
+
+    estado = models.CharField(max_length=10, choices=Estado.choices, default=Estado.EN_CURSO)
+    dificultad = models.CharField(max_length=10, choices=Dificultad.choices, default=Dificultad.NORMAL)
+
     estado = models.CharField(max_length=10, choices=Estado.choices, default=Estado.EN_CURSO)
     creada = models.DateTimeField(auto_now_add=True)
 
